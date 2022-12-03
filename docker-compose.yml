@@ -5,12 +5,12 @@ services:
     environment:
       - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
       - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
-      - PORT=6969
+      - PORT=3000
     build:
       context: sob
       dockerfile: Dockerfile
     ports:
-      - 6969
+      - ${PORT}:3000
 
   gotify:
     image: cthit/gotify
