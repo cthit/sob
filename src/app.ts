@@ -2,6 +2,8 @@
 import "dotenv/config";
 import { App } from "@slack/bolt";
 import { registerSay } from "./commands/say";
+import { registerReload } from "./commands/reload";
+import { registerUpdate } from "./commands/update";
 
 const app = new App({
 	token: process.env.SLACK_BOT_TOKEN,
@@ -12,7 +14,8 @@ const app = new App({
 
 // Register commands
 registerSay(app);
-
+registerReload(app);
+registerUpdate(app);
 // Register events
 
 (async () => {
