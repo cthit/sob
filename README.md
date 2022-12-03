@@ -9,3 +9,7 @@
 ## Run project
 
 Run `npm run dev`
+
+## Add new group
+
+Add the gamma group to `bot-whitelist.json`
