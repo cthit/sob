@@ -1,10 +1,13 @@
 import { App } from "@slack/bolt";
-import { splitArgs } from "../util/args";
+import { splitArgs } from "../util/util";
 import { updateWhitelist } from "../util/whitelist";
 
+const command = "/reload";
+
+// TODO: Add permission requirements
 export const registerReload = (app: App) => {
 	// Example function
-	app.command("/reload", async ({ ack, payload, context }) => {
+	app.command(command, async ({ ack, payload, context }) => {
 		// Acknowledge the command request
 		ack();
 
@@ -12,6 +15,12 @@ export const registerReload = (app: App) => {
 
 		try {
 			switch (args[0]) {
+				case "help":
+					await app.client.chat.postMessage({
+						token: context.botToken,
+						channel: payload.channel_id,
+						text: 'Available arguments "/help" are:\nall - Reloads all configs\nwhitelist - Reloads gamma group whitelist'
+					});
 				case "all":
 					updateWhitelist();
 					break;
@@ -22,7 +31,14 @@ export const registerReload = (app: App) => {
 					throw new Error("Argument not found");
 			}
 		} catch (error) {
-			console.error(error);
+			if (error instanceof Error) {
+				const message = `Could not execute the command "${command}": ${error.message}`;
+				await app.client.chat.postMessage({
+					token: context.botToken,
+					channel: payload.channel_id,
+					text: message
+				});
+			}
 		}
 	});
 };
