@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "strict": true,
         "outDir": "./dist"
     },
     "extends": "@tsconfig/node18/tsconfig.json"
