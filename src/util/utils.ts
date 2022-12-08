@@ -9,7 +9,7 @@ export const messageError = async (
 	command: string,
 	error: Error
 ) => {
-	const message = `Could not execute the command "${command}": ${error.message}`;
+	const message = `Could not execute "${command}": ${error.message}`;
 	await app.client.chat.postMessage({
 		token: botToken,
 		channel: channel_id,
