@@ -18,3 +18,7 @@ export const createUser = async (userSlackID: string, userCID: string) => {
 		}
 	});
 };
+
+export const prismaDisconnect = () => {
+	return prisma.$disconnect();
+};
