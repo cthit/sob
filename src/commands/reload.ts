@@ -1,11 +1,11 @@
 import { App } from "@slack/bolt";
-import { splitArgs } from "../util/util";
+import { messageError, splitArgs } from "../util/utils";
 import { updateWhitelist } from "../util/whitelist";
 
 const command = "/reload";
 
 // TODO: Add permission requirements
-export const registerReload = (app: App) => {
+const registerReload = (app: App) => {
 	// Example function
 	app.command(command, async ({ ack, payload, context }) => {
 		// Acknowledge the command request
@@ -32,13 +32,10 @@ export const registerReload = (app: App) => {
 			}
 		} catch (error) {
 			if (error instanceof Error) {
-				const message = `Could not execute the command "${command}": ${error.message}`;
-				await app.client.chat.postMessage({
-					token: context.botToken,
-					channel: payload.channel_id,
-					text: message
-				});
+				messageError(app, context.botToken, payload.channel_id, command, error);
 			}
 		}
 	});
 };
+
+export default registerReload;

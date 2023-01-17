@@ -1,6 +1,6 @@
 import { App } from "@slack/bolt";
 
-export const registerSay = (app: App) => {
+const registerSay = (app: App) => {
 	// Example function
 	app.command("/say", async ({ ack, payload, context }) => {
 		// Acknowledge the command request
@@ -20,3 +20,5 @@ export const registerSay = (app: App) => {
 		}
 	});
 };
+
+export default registerSay;

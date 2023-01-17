@@ -1,12 +1,10 @@
 // Require the Bolt package (github.com/slackapi/bolt)
 import "dotenv/config";
 import { App } from "@slack/bolt";
-import { registerSay } from "./commands/say";
-import { registerReload } from "./commands/reload";
-import { registerUpdate } from "./commands/update";
-import { registerOnJoinEvent } from "./events/onjoin";
 import { updateWhitelist } from "./util/whitelist";
 import { prismaDisconnect } from "./util/prisma";
+import registerCommands from "./commands/registercommands";
+import registerEvents from "./events/registerevents";
 
 const app = new App({
 	token: process.env.SLACK_BOT_TOKEN,
@@ -17,13 +15,8 @@ const app = new App({
 
 // Initialize
 updateWhitelist();
-
-// Register commands
-registerSay(app);
-registerReload(app);
-registerUpdate(app);
-// Register events
-registerOnJoinEvent(app);
+registerCommands(app);
+registerEvents(app);
 
 (async () => {
 	// Start your app
