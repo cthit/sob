@@ -1,7 +1,8 @@
 import { App } from "@slack/bolt";
+import registerOnJoinEvent from "./onjoin";
 
 const registerEvents = (app: App) => {
-	registerEvents(app);
+	registerOnJoinEvent(app);
 };
 
 export default registerEvents;

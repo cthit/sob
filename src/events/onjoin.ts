@@ -1,6 +1,18 @@
 import { App } from "@slack/bolt";
 import { gammaGetActiveGroups, gammaGetUser } from "../util/gamma";
-import { prismaCreateUser } from "../util/prisma";
+import {
+	prismaCreateGroup,
+	prismaCreateUser,
+	prismaGetGroup,
+	prismaGetSubgroups
+} from "../util/prisma";
+import {
+	addUserToUserGroup,
+	createUserGroup,
+	doesUserGroupExist
+} from "../util/usergroup";
+import { supergroupify } from "../util/utils";
+import { getWhitelist } from "../util/whitelist";
 
 const registerOnJoinEvent = (app: App) => {
 	app.event("team_join", async ({ event, client, context }) => {
@@ -18,10 +30,32 @@ const registerOnJoinEvent = (app: App) => {
 				});
 			// Adds user in the database
 			prismaCreateUser(userSlackID, userCID);
-			// TODO: Fetch data from gamma
 			const userData = await gammaGetUser(userCID);
-			const userGroups = userData.groups.map((val) => val.name);
-			userGroups.forEach((group) => {});
+			const userGroups = userData.groups.map((val) => ({
+				group: val.name,
+				superGroup: val.superGroup?.name
+			}));
+			await Promise.all(
+				userGroups.map(async ({ group, superGroup }) => {
+					if (await doesUserGroupExist(app, group)) {
+						addUserToUserGroup(app, userCID, group);
+					} else if (superGroup && getWhitelist().includes(superGroup)) {
+						const oldGroups = await prismaGetSubgroups(supergroupify(group));
+						await Promise.all(
+							oldGroups.map((oldGroup) => {
+								app.client.usergroups.update({
+									usergroup: oldGroup.sid,
+									handle: oldGroup.name
+								});
+							})
+						);
+						const { id: sid } = await createUserGroup(app, group);
+						if (!sid) throw new Error("Did not get sid for usergroup");
+						await prismaCreateGroup(group, sid);
+						await addUserToUserGroup(app, userCID, group);
+					}
+				})
+			);
 			// TODO: update slacks user groups if members active groups doesn't exist
 			// TODO: add member to groups
 		} catch (e) {

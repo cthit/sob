@@ -12,3 +12,9 @@ model User {
     sid String @unique
     cid String @unique
 }
+
+model Group {
+    id   String @id @default(cuid())
+    sid  String @unique
+    name String @unique
+}

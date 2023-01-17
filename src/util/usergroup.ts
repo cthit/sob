@@ -1,4 +1,6 @@
 import { App } from "@slack/bolt";
+import { prismaGetUser } from "./prisma";
+import { supergroupify } from "./utils";
 
 // Fetches all groups from slack
 export const getUserGroups = async (app: App) => {
@@ -45,7 +47,6 @@ export const doesUserGroupExist = async (app: App, groupIdentifier: string) => {
 export const createUserGroup = async (
 	app: App,
 	name: string,
-	channels: string[],
 	description?: string
 ) => {
 	// If no description is given automatically generate one
@@ -53,15 +54,45 @@ export const createUserGroup = async (
 		description = name + ", en del av IT sektionen";
 	}
 
+	const baseChannels = ["allmänt", "citat", "idéer", "möten", "shitposting"];
+
 	// format channels as slack wants it
-	const channelsAsString = channels.join(",");
+	const channelsAsString = baseChannels
+		.map((channel) => name + "-" + channel)
+		.join(",");
 	// send create user group request
 	const response = await app.client.usergroups.create({
 		name: name,
-		handle: name.toLowerCase(), // handles must be lowercase
+		handle: supergroupify(name), // handles must be lowercase
 		channels: channelsAsString,
 		description: description
 	});
 
-	return response.ok;
+	if (!response.ok || !response.usergroup) {
+		throw Error(
+			`Could not create usergroup '${name}' with the following error: ${response.error}`
+		);
+	}
+
+	return response.usergroup;
+};
+
+export const addUserToUserGroup = async (
+	app: App,
+	userIdentifier: string,
+	group: string
+) => {
+	const user = await prismaGetUser(userIdentifier);
+	if (!user) throw Error("User does not exist");
+	const users = await app.client.usergroups.users.list();
+	const response = await app.client.usergroups.users.update({
+		users: user.sid,
+		usergroup: group
+	});
+
+	if (!response.ok) {
+		throw Error(
+			`Could not add user '${userIdentifier}' to usergroup '${group}' with the following error: ${response.error}`
+		);
+	}
 };

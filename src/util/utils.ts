@@ -16,3 +16,10 @@ export const messageError = async (
 		text: message
 	});
 };
+
+export const supergroupify = (group: string) => {
+	return group
+		.toLowerCase()
+		.trim()
+		.substring(0, group.length - 3);
+};
