@@ -47,8 +47,9 @@ const hasValidMembershiop = async (slackID: string) => {
 	if (!prismaUser)
 		throw Error("Couldn't find prisma entry for Slack user: " + slackID);
 	const gammaUser = await gammaGetUser(prismaUser.cid);
-	gammaUser.groups;
-	gammaGetActiveGroups;
+	gammaUser.groups.map((group) => {
+		group.name;
+	});
 	return true;
 };
 

@@ -13,6 +13,7 @@ import {
 import { getCIdFromEmail, supergroupify } from "../util/utils";
 import { getWhitelist } from "../util/whitelist";
 
+// TODO: TEST THIS
 const registerOnJoinEvent = (app: App) => {
 	app.event("team_join", async ({ event, client, context }) => {
 		// get slack id of user that joined
