@@ -4,4 +4,3 @@ build
 dist
 db.sqlite
 .env
-package-lock.json

@@ -1,8 +1,8 @@
 {
-	"adminChannelId": "C04JYM6FU67",
+	"adminChannelId": "",
 	"defaultChannels": ["allmänt", "citat", "idéer", "möten", "shitposting"],
 	"whitelist": {
-		"groups": ["styrit22"],
-		"individuals": ["maxhagm"]
+		"groups": [],
+		"individuals": []
 	}
 }
