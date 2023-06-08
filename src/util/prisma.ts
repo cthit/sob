@@ -1,32 +1,30 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma: PrismaClient = new PrismaClient();
 
 export const prismaGetUser = async (identifier: string) => {
 	return await prisma.user.findFirst({
 		where: {
-			OR: [{ sid: identifier }, { cid: identifier }]
+			OR: [{ slackId: identifier }, { cid: identifier }]
 		}
 	});
 };
 
-export const prismaCreateUser = async (
-	userSlackID: string,
-	userCID: string
-) => {
+export const prismaCreateUser = async (userSlackID: string, userCID: string) => {
 	return await prisma.user.create({
 		data: {
 			cid: userCID,
-			sid: userSlackID
+			slackId: userSlackID
 		}
 	});
 };
 
-export const prismaCreateGroup = async (name: string, sid: string) => {
+export const prismaCreateGroup = async (handle: string, slackId: string, gammaName: string) => {
 	return await prisma.group.create({
 		data: {
-			sid,
-			name
+			handle,
+			slackId,
+			gammaName
 		}
 	});
 };
@@ -34,7 +32,7 @@ export const prismaCreateGroup = async (name: string, sid: string) => {
 export const prismaGetGroup = async (identifier: string) => {
 	return await prisma.group.findFirst({
 		where: {
-			OR: [{ sid: identifier }, { name: identifier }]
+			OR: [{ handle: identifier }, { slackId: identifier }, { gammaName: identifier }]
 		}
 	});
 };
@@ -42,9 +40,20 @@ export const prismaGetGroup = async (identifier: string) => {
 export const prismaGetSubgroups = async (superGroup: string) => {
 	return await prisma.group.findMany({
 		where: {
-			name: {
+			gammaName: {
 				startsWith: superGroup
 			}
+		}
+	});
+};
+
+export const prismaUpdateGroupHandle = async (gammaName: string, newHandle: string) => {
+	return await prisma.group.update({
+		where: {
+			handle: gammaName
+		},
+		data: {
+			handle: newHandle
 		}
 	});
 };

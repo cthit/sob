@@ -1,14 +1,22 @@
-import { Axios } from "axios";
-import { getWhitelist } from "./whitelist";
+import { Axios } from 'axios';
 
 const axios = new Axios({
 	baseURL: process.env.GAMMA_URL,
 	timeout: 1000,
 	headers: {
-		name: "authorization",
+		name: 'authorization',
 		value: `pre-shared ${process.env.GAMMA_API_TOKEN}`
 	}
 });
+
+export const isFKIT = (group: GammaSuperGroup) => {
+	return (
+		group.type === 'COMMITTEE' ||
+		group.type === 'SOCIETY' ||
+		group.type === 'BOARD' ||
+		group.type === 'FUNCTIONARIES'
+	);
+};
 
 export const gammaGetUser = async (cid: string) => {
 	return await axios.get(`/user/${cid}`).then((result) => {
@@ -17,42 +25,13 @@ export const gammaGetUser = async (cid: string) => {
 	});
 };
 
-const activeGroupUpdateIntervall = 604800000; // A week in milliseconds, 7 * 24 * 60 * 60 * 1000
-let activeGroupLastUpdate = 0; // small number prompts an update at next get
-let activeGroups: string[];
-
-export const gammaGetActiveGroups = async () => {
-	if (
-		!activeGroups ||
-		Date.now() - activeGroupLastUpdate > activeGroupUpdateIntervall
-	)
-		await updateActiveGroups();
-	return [...activeGroups];
-};
-
-const updateActiveGroups = async () => {
-	try {
-		const filteredSuperGroups = await getSuperGroups().then((result) => {
-			// Filters result after whitelist
-			const whitelist = getWhitelist();
-			return result.filter((val) => {
-				return whitelist.includes(val.name);
-			});
-		});
-		// Get subgroups from supergroups
-		const result = filteredSuperGroups.map((val) => getSubGroups(val.name));
-		activeGroups = []; // Clear current groups
-		// Push new subgroups to activeGroups
-		result.forEach(async (subGroupList) =>
-			(await subGroupList).forEach((subGroup) => {
-				activeGroups.push(subGroup.name);
-			})
-		);
-		// Update time of update
-		activeGroupLastUpdate = Date.now();
-	} catch (e) {
-		console.log(e);
-	}
+export const filterActiveGammaGroups = (gammaGroups: [GammaGroup]) => {
+	return gammaGroups.filter((g) => {
+		if (g.superGroup) {
+			return isFKIT(g.superGroup);
+		}
+		return false;
+	});
 };
 
 export const getSubGroups = async (name: string): Promise<GammaGroup[]> => {
@@ -61,20 +40,23 @@ export const getSubGroups = async (name: string): Promise<GammaGroup[]> => {
 };
 
 export const getSuperGroups = async (): Promise<GammaSuperGroup[]> => {
-	const result = await axios.get("/superGroups");
+	const result = await axios.get('/superGroups');
 	return result.data;
 };
 
-export const getGroupMembers = async (
-	groupName: string
-): Promise<GammaUser[]> => {
+export const getGroupMembers = async (groupName: string): Promise<GammaUser[]> => {
 	const result = await axios.get(`/groups/${groupName}/members`);
 	return result.data;
 };
 
 // Defining types like this might be a bit overkill...
 
-type GammaUser = {
+export type Authority = {
+	id: string;
+	aothority: string;
+};
+
+export type GammaUser = {
 	id: string;
 	cid: string;
 	nick: string;
@@ -84,12 +66,12 @@ type GammaUser = {
 	acceptanceYear: number;
 	gdpr: boolean;
 	language: string;
-	authorities: [string]; // TODO: Unsure if type is correct
+	authorities: [Authority];
 	groups: [GammaGroup];
 	websiteURLs?: string;
 };
 
-type GammaGroup = {
+export type GammaGroup = {
 	id: string;
 	becomesActive?: number;
 	becomesInactive?: number;
@@ -108,7 +90,7 @@ type GammaGroup = {
 	active?: boolean;
 };
 
-type GammaSuperGroup = {
+export type GammaSuperGroup = {
 	id: string;
 	name: string;
 	prettyName: string;

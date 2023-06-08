@@ -9,12 +9,12 @@ generator client {
 
 model User {
     id  String @id @default(cuid())
-    sid String @unique
+    slackId String @unique
     cid String @unique
 }
 
 model Group {
-    id   String @id @default(cuid())
-    sid  String @unique
-    name String @unique
+    handle  String @id
+    slackId     String @unique
+    gammaName    String @unique
 }
