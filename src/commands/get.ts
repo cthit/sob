@@ -11,7 +11,7 @@ const registerGet = (app: App) => {
 				case 'channel':
 					result = await sendMessage(app, payload.channel_id, payload.text);
 					break;
-				case 'user':
+				case 'sender':
 					result = await sendMessage(app, payload.channel_id, payload.user_id);
 					break;
 			}
