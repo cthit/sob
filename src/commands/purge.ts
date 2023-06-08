@@ -10,6 +10,7 @@ import {
 import { gammaGetUser, isFKIT } from '../util/gamma';
 
 // Probably impossible to automate entirely as it might requires enterprise...
+// The other option is to make it send a list of users to remove and then have an admin remove them manually
 const registerPurge = (app: App) => {
 	app.command('/purge', async ({ ack, payload, context }) => {
 		ack();
