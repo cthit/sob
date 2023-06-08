@@ -2,6 +2,10 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma: PrismaClient = new PrismaClient();
 
+export const prismaGetAllUsers = async () => {
+	return await prisma.user.findMany({});
+};
+
 export const prismaGetUser = async (identifier: string) => {
 	return await prisma.user.findFirst({
 		where: {
@@ -27,6 +31,10 @@ export const prismaCreateGroup = async (handle: string, slackId: string, gammaNa
 			gammaName
 		}
 	});
+};
+
+export const prismaGetAllGroups = async () => {
+	return await prisma.group.findMany({});
 };
 
 export const prismaGetGroup = async (identifier: string) => {

@@ -1,56 +1,53 @@
-import { App } from "@slack/bolt";
-import { gammaGetActiveGroups, gammaGetUser } from "../util/gamma";
-import { prismaGetUser } from "../util/prisma";
-import { splitArgs } from "../util/utils";
+import { App } from '@slack/bolt';
+import { sendMessage } from '../util/slack';
+import { getAdminChannelId, isWhitelisted } from '../util/config';
+import {
+	prismaGetAllGroups,
+	prismaGetAllUsers,
+	prismaGetGroup,
+	prismaGetUser
+} from '../util/prisma';
+import { gammaGetUser, isFKIT } from '../util/gamma';
 
+// Probably impossible to automate entirely as it might requires enterprise...
 const registerPurge = (app: App) => {
-	app.command("/purge", async ({ ack, payload, context }) => {
+	app.command('/purge', async ({ ack, payload, context }) => {
 		ack();
 
-		const args = splitArgs(payload.text);
-
-		if (args.length > 0 && args[0] == "legacy") {
-			purgeLegacy(app);
-		} else {
-			purge();
+		try {
+			// Get alla users in database
+			const users = await prismaGetAllUsers();
+			// Get their data from gamma
+			const gammaUsers = await Promise.all(users.map((user) => gammaGetUser(user.cid)));
+			// Filter out users that are active
+			const nonFKITUsers = gammaUsers.filter((user) => isWhitelisted(user));
+			// Fetch slackIds for nonFKITUsers
+			const nonFKITUsersSlackIds = await Promise.all(
+				nonFKITUsers.map((user) => prismaGetUser(user.cid))
+			);
+			// Remove users from the workspace
+			const response = await Promise.all(
+				nonFKITUsersSlackIds.map((user) => {
+					if (!user || !user.slackId) {
+						throw new Error(`Couldn't find slack id for user ${user?.cid}`);
+					}
+					// Might be worth to try session.reset() instead
+					return app.client.admin.users.remove({
+						team_id: payload.team_id,
+						token: context.botToken,
+						user_id: user.slackId
+					});
+				})
+			);
+		} catch (e) {
+			console.log(e);
+			sendMessage(
+				app,
+				getAdminChannelId(),
+				`Failed to run purge command with the following error: ${e}`
+			);
 		}
 	});
-};
-
-const purge = () => {
-	// iterate through user groups
-	// kick members of user group if old
-	// kick members with no user group
-};
-
-const purgeLegacy = async (app: App) => {
-	// get all members of workspace
-	const response = await app.client.admin.users.list();
-	if (response && response.ok && response.users) {
-		let removeCount = 0;
-		response.users.map(async (user) => {
-			// validate membership
-			if (!user.id) {
-				throw Error("Requested user doesn't have an ID?" + user);
-			}
-			const isValid = await hasValidMembershiop(user.id);
-			if (!isValid) {
-				removeCount++;
-			}
-		});
-		console.log("Pretended to remove " + removeCount + " users");
-	}
-};
-
-const hasValidMembershiop = async (slackID: string) => {
-	const prismaUser = await prismaGetUser(slackID);
-	if (!prismaUser)
-		throw Error("Couldn't find prisma entry for Slack user: " + slackID);
-	const gammaUser = await gammaGetUser(prismaUser.cid);
-	gammaUser.groups.map((group) => {
-		group.name;
-	});
-	return true;
 };
 
 export default registerPurge;
