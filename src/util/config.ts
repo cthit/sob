@@ -1,4 +1,4 @@
-import fs from 'fs';
+import * as fs from 'fs';
 import { GammaUser, isFKIT } from './gamma';
 
 interface Config {
