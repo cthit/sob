@@ -1,7 +1,8 @@
 {
-    "compilerOptions": {
-        "strict": true,
-        "outDir": "./dist"
-    },
-    "extends": "@tsconfig/node18/tsconfig.json"
+	"compilerOptions": {
+		"strict": true,
+		"outDir": "./dist",
+		"forceConsistentCasingInFileNames": true,
+		"moduleResolution": "node"
+	}
 }
