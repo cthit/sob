@@ -1,30 +1,19 @@
 import { App } from '@slack/bolt';
 import { sendMessage } from '../util/slack';
 import { getAdminChannelId, isWhitelisted } from '../util/config';
-import {
-	prismaGetAllGroups,
-	prismaGetAllUsers,
-	prismaGetGroup,
-	prismaGetUser
-} from '../util/prisma';
-import { gammaGetUser, isFKIT } from '../util/gamma';
+import { prismaGetUser } from '../util/prisma';
+import { getNonFKITUsers } from '../util/utils';
 
-// Probably impossible to automate entirely as it might requires enterprise...
+// Probably impossible to automate entirely as it might requires an enterprise subscription...
 // The other option is to make it send a list of users to remove and then have an admin remove them manually
 const registerPurge = (app: App) => {
 	app.command('/purge', async ({ ack, payload, context }) => {
 		ack();
 
 		try {
-			// Get alla users in database
-			const users = await prismaGetAllUsers();
-			// Get their data from gamma
-			const gammaUsers = await Promise.all(users.map((user) => gammaGetUser(user.cid)));
-			// Filter out users that are active
-			const nonFKITUsers = gammaUsers.filter((user) => isWhitelisted(user));
 			// Fetch slackIds for nonFKITUsers
 			const nonFKITUsersSlackIds = await Promise.all(
-				nonFKITUsers.map((user) => prismaGetUser(user.cid))
+				(await getNonFKITUsers()).map((user) => prismaGetUser(user.cid))
 			);
 			// Remove users from the workspace
 			const response = await Promise.all(

@@ -1,7 +1,15 @@
 import { App } from '@slack/bolt';
 import { WebClient } from '@slack/web-api';
 import { createUserGroup } from './slack';
-import { prismaCreateGroup, prismaGetGroup, prismaUpdateGroupHandle } from './prisma';
+import {
+	prismaCreateGroup,
+	prismaGetAllUsers,
+	prismaGetGroup,
+	prismaGetUser,
+	prismaUpdateGroupHandle
+} from './prisma';
+import { gammaGetUser } from './gamma';
+import { isWhitelisted } from './config';
 
 export const splitArgs = (args: string) => args.trim().split(' ');
 
@@ -78,4 +86,14 @@ export const makeHandleAvailable = async (app: App, handle: string) => {
 		);
 	}
 	prismaUpdateGroupHandle(handle, response.gammaName);
+};
+
+// Returns a list of all users that are not in FKIT
+export const getNonFKITUsers = async () => {
+	// Get all users in database
+	const users = await prismaGetAllUsers();
+	// Get their data from gamma
+	const gammaUsers = await Promise.all(users.map((user) => gammaGetUser(user.cid)));
+	// Filter out users that are active
+	return gammaUsers.filter((user) => isWhitelisted(user));
 };
