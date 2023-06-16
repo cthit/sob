@@ -15,8 +15,8 @@ const registerSync = (app: App) => {
 			// Update usergroups
 			await updateUsersUsergroups(app, allSlackUsers);
 			sendMessage(app, payload.channel_id, 'Synced usergroups');
-			// Get nonFKITUsers
-			// Get deactivated users that need to be reactivated
+			// TODO: Get nonFKITUsers
+			// TODO: Get deactivated users that need to be reactivated
 		} catch (e) {
 			console.log(e);
 			sendMessage(
@@ -52,6 +52,8 @@ const createAllUsers = async (app: App, members: { id?: string; name?: string }[
 	}
 };
 
-const updateUsersUsergroups = async (app: App, members: { id?: string; name?: string }[]) => {};
+const updateUsersUsergroups = async (app: App, members: { id?: string; name?: string }[]) => {
+	// TODO: Implement
+};
 
 export default registerSync;
