@@ -12,6 +12,21 @@ export const sendMessage = async (app: App, channelId: string, message: string) 
 	});
 };
 
+// Updates a message
+export const updateMessage = async (
+	app: App,
+	channelId: string,
+	ts: string,
+	newMessage: string
+) => {
+	return await app.client.chat.update({
+		token: process.env.SLACK_BOT_TOKEN,
+		channel: channelId,
+		ts: ts,
+		text: newMessage
+	});
+};
+
 // Creates a channel
 export const createChannel = async (app: App, name: string, isPrivate: boolean) => {
 	return await app.client.conversations.create({
