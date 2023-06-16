@@ -4,6 +4,7 @@ import { getDefaultChannels } from './config';
 // Sends a message to a channel
 export const sendMessage = async (app: App, channelId: string, message: string) => {
 	return await app.client.chat.postMessage({
+		token: process.env.SLACK_BOT_TOKEN,
 		// Channel to send message to
 		channel: channelId,
 		// Text in the notification
@@ -92,4 +93,39 @@ export const addUserToUserGroup = async (app: App, userSlackId: string, groupSla
 		users: `${users.users},${userSlackId}`,
 		usergroup: groupSlackId
 	});
+};
+
+export const getAllUsers = async (app: App) => {
+	const result = await getPageOfUsers(app);
+
+	const allMembers = result.members;
+	let cursor = result.newCursor;
+
+	while (cursor && cursor !== '') {
+		const { members, newCursor } = await getPageOfUsers(app, cursor);
+		allMembers.push(...members);
+		cursor = newCursor;
+	}
+
+	return allMembers;
+};
+
+const getPageOfUsers = async (app: App, cursor?: string, limit = 200) => {
+	const response = await app.client.users.list({
+		limit,
+		cursor
+	});
+
+	if (!response.ok || !response.members) {
+		throw new Error(`Could not get users in workspace with the following error: ${response.error}`);
+	}
+
+	const members = response.members;
+	let newCursor;
+
+	if (response.response_metadata?.next_cursor) {
+		newCursor = response.response_metadata.next_cursor;
+	}
+
+	return { members, newCursor };
 };
