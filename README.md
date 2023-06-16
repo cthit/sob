@@ -8,6 +8,12 @@
 
 ## Run project
 
+### Dev docker
+
+Run `docker compose -f docker-compose.dev.yml up -d`
+
+### Run app
+
 Run `npm run dev`
 
 ## Filling in credentials
