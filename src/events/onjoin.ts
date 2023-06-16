@@ -17,7 +17,7 @@ const registerOnJoinEvent = (app: App) => {
 		try {
 			// get slack id of user that joined
 			const userSlackID = event.user.id;
-			const userCID = await getCidFromEmail(client, userSlackID);
+			const userCID = await getCidFromEmail(app, userSlackID);
 			// Adds user in the database
 			prismaCreateUser(userSlackID, userCID);
 			const gammaUser = await gammaGetUser(userCID);

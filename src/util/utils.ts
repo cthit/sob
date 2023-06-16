@@ -1,11 +1,9 @@
 import { App } from '@slack/bolt';
-import { WebClient } from '@slack/web-api';
 import { createUserGroup } from './slack';
 import {
 	prismaCreateGroup,
 	prismaGetAllUsers,
 	prismaGetGroup,
-	prismaGetUser,
 	prismaUpdateGroupHandle
 } from './prisma';
 import { gammaGetUser } from './gamma';
@@ -36,8 +34,8 @@ export const supergroupify = (groupName: string) => {
 		.substring(0, groupName.length - 3);
 };
 
-export const getCidFromEmail = async (client: WebClient, userSlackID: string) => {
-	return await client.users.profile.get({ user: userSlackID }).then((result) => {
+export const getCidFromEmail = async (app: App, userSlackID: string) => {
+	return await app.client.users.profile.get({ user: userSlackID }).then((result) => {
 		if (result.ok && result.profile && result.profile.email) {
 			const email = result.profile.email;
 			return email.substring(0, email.indexOf('@'));
